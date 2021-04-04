@@ -580,6 +580,24 @@ $t1 = 0000 0000 0000 0000 0000 0000 1001 0000
   
 - MIPS組合語言包含有一暫存器跳躍(jump register, jr)指令，意為無條件跳躍至暫存器內容所示之位址處。
 
+- 通常來說，我們會用I-format來構造bne/beq指令
+
+  - opcode就是bne、beq的opcode
+  - rs與rt用來比較兩個的暫存器
+  - immediate用來儲存word address
+    - 指令通常都是word aligned (byte address通常都是隔4，也就是最後兩個bit永遠都是0)
+    - 如果敘述達成，那麼就跳躍到$PC = (PC+4) + (Immediate + 4)$
+    - 如果敘述不達成，那麼就跳躍到$PC = (PC + 4)$
+    - 如此一來，我們可以掌握大概$\pm2^{17}$個byte，來進行跳躍。
+
+- 通常來說，我們會用J-format來構造jal或者j指令
+
+  - J-format指令由6bits的opcode與26bits的target address所組成
+  - 跳躍一樣是跳躍word address
+  - 如果我們一定要指定32-bits的address
+    - 我們會把位址設定在暫存器，接著用jr來進行跳躍
+    - ``jr $ra    #跳躍到$ra存進的記憶體地址`` 
+
 
 
 ##### Example - 將C語言編譯至MIPS碼
@@ -619,7 +637,7 @@ while(save[i] == k){
 Loop: sll $t1, $s3, 2  #暫時暫存器$t1=i*4
 
 add  $t1, $t1, $s6     # t1 = save[i]的位址
-lw   $t0,0($t1)        # 暫時暫存器$t0=save[i]
+lw   $t0, 0($t1)       # 暫時暫存器$t0=save[i]
 bne  $t0, $s5, Exit    # 若save[i]≠k則前往Exit
 addi $s3, $s3, 1       # i = i + 1
 j Loop                 # 前往Loop
@@ -679,4 +697,69 @@ sltu $t0, $s0, $s1  #4294967295 > 1, $t0 = 0
 sltu $t0, $s1, $t2
 beq  $t0, $zero, IndexOutOfBounds
 ```
+
+
+
+### 2.8 Supporting Procedures in Computer Hardware
+
+#### 2.8.1 Procedure Calling Step
+
+1. 把參數放進變數暫存器(`$a`)
+2. 跳到函數標籤(jal ProcedureLabel)
+3. 讀取函數的資料
+4. 運行函數的運算
+5. 把結果丟到`$v`暫存器
+6. 回去呼叫的原點(jr `$ra`)
+
+
+
+#### 2.8.2 Register Usage
+
+- `$a0` - `$a3`: 變數暫存器
+- `$v0`, `$v1`: 結果暫存器
+- `$t0` - `$t9`: 暫時暫存器
+- `$s0` - `$s7`: 儲存暫存器(Callee可以儲存或複寫，Caller在Caller做回傳後使用)
+- `$gp`: 靜態資料的全域指標暫存器
+- `$sp`: 堆疊指標暫存器
+- `$fp`: 堆疊框指標暫存器
+- `$ra`: 回傳地址暫存器
+
+
+
+#### 2.8.3 Procedure Call Instructions
+
+- 用來呼叫函數的指令：``jal`` (jump and link)
+  - 用法：``jal ProcedureLabel``
+  - 把$PC+4$的位置放到暫存器`$ra`上
+  - 跳到目標位址
+- 用來回去原函數的指令：``jr``
+  - 用法：``jr $ra``
+  - 複製`$ra`暫存器的值到程序計數器PC上
+
+
+
+#### 2.8.4 Callee的權利，Caller的責任
+
+- Callee的權利
+  - 可以自由的使用V/A/T暫存器
+  - 可以認定參數有被正確的傳遞
+  - 為了Callee的權利，Caller必須要負上一定的責任，在有必要的時候把值傳至指定的暫存器
+- Caller的責任
+  - 回傳地址：`$ra`
+    - 這樣函數呼叫時會複寫`$ra`
+  - 變數：`$a0`, `$a1`, `$a2`, `$a3`
+    - 如果在函數運行完後，我們還依然要用到這些變數的話
+  - 暫時暫存器：`$t0` - `$t9`
+    - 如果在函數運行完後，我們還依然要用到這些暫時暫存器的值的話
+  - 回傳值：`$v0`, `$v1`
+    - 如果在函數運行完後，回傳的值有在這些暫存器上的話
+
+
+
+#### 2.8.5 Caller的權利，Callee的責任
+
+- Caller的權利
+  - 可以自由的使用`$s`暫存器，不用擔心被callee所覆寫
+  - 可以認定回傳的結果有被正確的傳遞
+  - 為了Caller的權利，Callee必須要負上一定的責任，也就是在Callee執行完後，把S暫存器復原
 
