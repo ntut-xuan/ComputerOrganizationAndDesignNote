@@ -763,3 +763,149 @@ beq  $t0, $zero, IndexOutOfBounds
   - 可以認定回傳的結果有被正確的傳遞
   - 為了Caller的權利，Callee必須要負上一定的責任，也就是在Callee執行完後，把S暫存器復原
 
+
+
+#### 2.8.6 函數呼叫的溝通
+
+- Callee的義務
+  - 如果用到了`$s`，或者有很大的local structure，那麼就下拉`$sp`來讓我們之後能對暫存器做還原。
+    - ``addi $sp, $sp, -12``
+  - 如果用到了`$s`，那麼就先把原先的值做備份。
+    - ``sw $s0, 8($sp)``
+  - 從`$a0 ~ $a3`來拿取函數的參數。
+  - 執行函數的指令
+  - 如果不是void，那就把要回傳的值丟到`$v0, $v1`。
+  - 函數結束後，把前面的兩個步驟反向操作來還原。
+  - `jr $ra`
+- Caller的義務
+  - 下拉`$sp`來還原暫存器。
+    - `addi $sp, $sp, -28`
+  - 儲存`$ra`的值，因為`jal`會影響它的值
+    - `sw $ra, 24($sp)`
+  - 如果函數呼叫結束之後，我們還會用到`$a, $t, $v`的值的話，我們把這些值壓到stack，或者從`$s`作複製。
+    - `sw $t0, 20($sp)`
+  - 把前面四個變數丟到暫存器`$a0~$a3`，額外的變數將會被丟到stack，也就是`$a4 = 0($sp)`
+  - `jal`到想要的函數
+  - 反向操作前面三個步驟。
+
+##### An Example of Passing Argument
+
+```
+int doh(int i, int j, int k, int l, int m, char c, int n){
+	return i+j+n
+}
+```
+
+
+
+```
+doh: lw  $t0, 4($sp)
+     add $a0, $a0, $a1
+     add $v0, $a0, $t0
+     jr  $ra
+```
+
+
+
+
+
+##### Leaf Procedure Example
+
+```
+int leaf_example(int g, h, i, j){
+	int f;
+	f = (g + h) - (i + j);
+	return f;
+}
+```
+
+
+
+- 因為有四個變數，所以第四個變數會被壓到stack上。
+
+- 因為有local變數f，所以這個部分會被壓到stack上。
+  - Callee的義務
+- 回傳值到`$v0`
+
+```
+leaf_example: addi $sp, $sp, -4
+			  sw   $s0, 0($sp)      # 把$s0存到stack上，這是callee的義務
+			  add  $t0, $a0, $a1    
+			  add  $t1, $a2, $a3
+			  sub  $s0, $t0, $t1
+			  add  $v0, $s0, $zero  # 運行程式
+			  lw   $s0, 0($sp)      
+			  addi $sp, $sp, 4      # 還原$s0，這是callee的義務
+			  jr   $ra              # 回傳
+```
+
+
+
+#### 2.8.7 非末端程序
+
+- 非末端程序的舉例：一個副程式呼叫自己，或者呼叫別的副程式
+- 對於巢狀呼叫，caller必須要儲存這些東西到stack：
+  - 它的回傳地址`$ra`
+  - 在呼叫之後，所有的變數暫存器`$a`，暫時暫存器`$t`，還有它的回傳值`$v`
+  - 在呼叫之後還原回去
+
+
+
+##### Non-Leaf Procedure Example
+
+```
+int fact(int n){
+	if (n < 1){
+		return 1;
+	}else{
+		return n * fact(n-1);
+	}
+}
+```
+
+- 變數n在`$a0`
+- 結果在`$v0`
+
+
+
+```
+fact:
+     addi $sp, $sp, -8    #讓stack儲存兩個東西(caller的義務)
+     sw   $ra, 4($sp)
+     sw   $a0, 0($sp)
+     slti $t0, $a0, 1     #如果$a0小於1，那$t0就會被設置成0
+     beq  $t0, $zero, L1  #如果$t0不等於0，那就會跳到L1
+     addi $v0, $zero, 1   #如果是0的話，那就把return 1加回去
+     addi $sp, $sp, 8     #把stack前面兩個東西pop掉
+     jr   $ra             
+L1:  addi $a0, $a0, -1    #實作n-1
+     jal  fact            #跳到fact，並且將$ra設置成下面的(PC+4)
+     lw   $a0, 0($sp)     #恢復之前的$a0
+     lw   $ra, 4($sp)     #恢復之前的$ra
+     addi $sp, $sp, 8     #把stack前面兩個東西pop掉
+     mul  $v0, $a0, $v0   #把$a0跟$v0做相乘
+     jr   $ra
+```
+
+
+
+#### 2.8.8 Stack的區域資料
+
+- 區域資料會被callee所分配
+- Procedure Frame($fp)：用來給編譯器去控制stack的儲存
+
+
+
+#### 2.8.9 記憶體的布局
+
+![image-20210408174831390](https://i.imgur.com/uWDcOle.png)
+
+- Text: 程式碼
+- Static data: 用來放全域變數
+  - 例如一些static的變數、靜態記憶體array、字串也會放在這裡
+  - `$gp`用來設置初始的記憶體位置，讓我們可以很快速的找到靜態的資料
+- Dynamic data: heap
+  - 一些動態陣列，或者Java的new實作類別
+- Stack
+  - 自動儲存空間
+
