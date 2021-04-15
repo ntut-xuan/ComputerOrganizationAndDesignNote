@@ -317,6 +317,14 @@ $\text{CPU Times} = \dfrac{\text{Instruction}}{\text{Program}} \times \dfrac{\te
 
 
 
+#### 2.1.3 Opcodes Table
+
+![img](https://i.imgur.com/KJsVodz.png)
+
+
+
+
+
 ### 2.2 計算機硬體的運作
 
 - 每一道MIPS算術指令只能執行一種運算且永遠一定使用三個變數。
