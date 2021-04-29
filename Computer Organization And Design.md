@@ -921,48 +921,141 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 ## 3. Arithmetic for Computers
 
-### 3.1 Introduce
+### Introduce - 加法跟減法
 
-- 整數運算子
-  - 加法或減法
-  - 乘法或除法
-  - 解決overflow的問題
-- 浮點數
-  - 浮點數的表示與運算子
-- 設計一個MIPS ALU
-  - 必須要支援以下的運算子
-    - add, sub - 二補數加法/減法與溢位偵測
-    - and, or, nor - 邏輯及、邏輯或、邏輯反或
-    - if Zero
-    - 溢位例外
-    - slt (set on less then): 帶有進位的二補數加法，確認符號bit的結果
-- 定義數字系統
-  - Bits就是bit，沒有其他的含意
-  - Binary Integer (base 2)
-    - 0000 0001 0010 0011 0100 0101 0110 0111 1000 1001...
-    - 若有$n$個bit，則十進制可以表示的範圍為：$0 \sim 2^n-1$
-  - bit string是有限的，但對於一些分數或實數來說，bit會不夠用，因此就會造成溢位或失真錯誤
-    - 例如：$1/3 \approx 0.666667$
-- 呈現負數的方式
-  - 符號數：000和100會有模糊0的問題，不考慮
-  - 一補數：000和111會有模糊0的問題，不考慮
-  - 二補數：正數與負數的數量不一樣，但0是唯一的
-- 取負數
-  - 反向所有bit然後+1 (跟二補數一樣)
-- 符號延長
-  - 如果要把n個bit延長至m個bit，則我們把MSB的數從n延長至m。
-    - 例如0010 = 0000 0010
-    - 例如1101 = 1111 1101
-- ALU
-  - ALU Ctrl (4 bit)
-    - 0000代表AND
-    - 0001代表OR
-    - 0010代表ADD
-    - 0110代表SUBTRACT
-    - 0111代表SET-ON-LESS-THAN
-    - 1100代表NOR
-  - 設計方法
-    - 分治法
-    - 解決一部分的問題，然後繼續解決問題
-      - ![image-20210421095627216](https://i.imgur.com/ScxNrrf.png)
+在二進制作加法、減法跟在十進制作加法差不多概念，就是從右加或減到左
 
+
+
+#### Example 1
+
+嘗試用二進制加法把$6_{\text{ten}}$與$7_\text{ten}$加起來。
+
+![image-20210429163421202](https://i.imgur.com/ymqsFTB.png)
+
+
+
+#### Example 2
+
+嘗試用二進制減法把$7_\text{ten}$減去$6_\text{ten}$
+
+![image-20210429163542120](https://i.imgur.com/DB5B27C.png)
+
+或者你可以用補數來做減法，先把$6_\text{ten}$取補數然後加起來
+
+![image-20210429163617806](https://i.imgur.com/yQhXiW0.png)
+
+
+
+### Introduce - 溢位
+
+若一個有號數用32個bit所儲存，則做相加或相減可能會使有號數結果超過32個bit，超出變成33個bit
+
+在這種情況，我們稱作為溢位，溢位會使最後相加的結果是錯誤的，見以下表格。
+
+|      | A         | B         | 結果(R) |
+| ---- | --------- | --------- | ------- |
+| A+B  | $A \ge 0$ | $B \ge 0$ | $R < 0$ |
+| A+B  | $A < 0$   | $B < 0$   | $R > 0$ |
+| A-B  | $A \ge 0$ | $B < 0$   | $R < 0$ |
+| A-B  | $A < 0$   | $B \ge 0$ | $R > 0$ |
+
+在MIPS中提供了兩種運算子。
+
+- add, addi, sub，皆為有號數加法、減法，會在溢位發生時給予異常的結果
+- addu, addiu, subu, 皆為無號數加法、減法，會比有號數加法多一個bit，在有號數溢位發生時，顯示正常的結果
+
+
+
+### Introduce - ALU的功能介紹
+
+![image-20210429170540124](https://i.imgur.com/XaNa9ik.png)
+
+- 輸入端A：輸入一個32位二進制數字
+- 輸入端B：輸入一個32位二進制數字
+- ALUctrl：輸入一個4位數，用來設定運算子，例如0010就是ADD
+- Zero：輸出0代表結果不是0，輸出1代表結果為0
+- Result：輸出一個32位二進制數字，代表運算的結果
+- Overflow：輸出1代表結果溢位，輸出0代表結果沒有溢位
+- CarryOut：輸出1代表進位，輸出0代表沒有進位
+
+
+
+#### ALUctrl 表格
+
+| ALU控制用的二進制數字 |       函數       |
+| :-------------------: | :--------------: |
+|         0000          |       ADD        |
+|         0001          |        OR        |
+|         0010          |       add        |
+|         0110          |     subtract     |
+|         0111          | set on less than |
+|         1100          |       NOR        |
+
+
+
+### Introduce - 設計ALU的指南
+
+#### Trick 1 - 分而治之
+
+處理and、or之類的東西，其實我們可以一個bit一個bit做運算。
+
+但是像是加法要處理進位的部分，所以我們的結果沒辦法單純一個一個算。
+
+所以我們可以用32個ALU，把加法的部分拆成32個bit，接著把ALU串在一起就能得到加法的結果了。
+
+
+
+#### Trick 2 - 完成部分的問題後延伸
+
+要實作slt、xor，我們可以先弄出add、or、and、sub，再來實作slt、xor的部分。
+
+
+
+
+
+### Introduce - 實作1-bit ALU
+
+<img src="https://i.imgur.com/73qpL0G.png" alt="image-20210429173417536" style="zoom:67%;" />
+
+
+
+### Introduce - 實作4-bit ALU
+
+<img src="https://i.imgur.com/bIcHcyf.png" alt="image-20210429173837604" style="zoom:67%;" />
+
+
+
+### Introduce - 實作ALU Subtract
+
+利用補數，A+(-B) = A-B
+
+![image-20210429174433977](https://i.imgur.com/U0nt1QA.png)
+
+### Introduce - 實作32-bit ADD串接加法
+
+由於加法與減法皆為二補數加法、減法，所以對於MSB、LSB的部份我們要稍微做一點修改。
+
+<img src="https://i.imgur.com/vAK2KV0.png" alt="image-20210429174835287" style="zoom:67%;" />
+
+MSB：
+
+判斷有沒有Overflow
+
+
+
+LSB：
+
+減法的部份會是1補數，那為了要轉成二補數，所以我們得要加1
+
+這個1的部分不可能會無中生有，在剛剛我們有講到若S0=1，則信號會輸出$B'$
+
+我們可以用這個S0的信號接到Cin上，這樣就能有+1的部分了。
+
+
+
+### Introduce - 實作溢位偵測
+
+$\text{Overflow} = \text{CarryIn[n-1]} \oplus \text{CarrayOut[n-1]}$
+
+原因：考慮最高位數的可能
