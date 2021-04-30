@@ -1058,4 +1058,35 @@ LSB：
 
 $\text{Overflow} = \text{CarryIn[n-1]} \oplus \text{CarrayOut[n-1]}$
 
-原因：考慮最高位數的可能
+如果最高位元的CarryIn是0，然後CarryOut是1
+
+或者最高位元的CarryIn是1，然後CarryOut是0
+
+就會發生溢位
+
+因此在實作的部分，我們只需要將CarryIn與CarryOut取XOR即可。
+
+![img](https://i.imgur.com/0IjPRm1.png)
+
+
+
+
+
+### Introduce - 實作NOR運算子
+
+$\overline{A+B} = \overline{A}\cdot \overline{B}$
+
+所以其實我們可以把ALUCtrl理解成，第一個bit為A取不取反相，第二個bit為B取不取反相
+
+第三與第四個bit則為控制AND、OR、ADD的多工器Select。
+
+<img src="https://i.imgur.com/cBPTrC4.png" alt="image-20210430114946133" style="zoom:150%;" />
+
+
+
+### Introduce - 實作零檢測
+
+我們只需要把Result全部連到一個NOR上，若Result存在一個1，則必使NOR=0。
+
+![image-20210430115311711](https://i.imgur.com/sl6vO1r.png)
+
