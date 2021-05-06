@@ -1090,3 +1090,53 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 ![image-20210430115311711](https://i.imgur.com/sl6vO1r.png)
 
+
+
+### Introduce - 實作SLT運算子
+
+如果$A<B$，那麼第一個暫存器的LESS應該要等於1
+
+已知如果$A<B$，那麼經過減法之後，他的第31個ALU sign-bit應該要是1，所以已知SET=1。
+
+所以我們把第1~第30個ALU的LESS全部設成0。
+
+把SET往前拉到第0個ALU的LESS上，這樣只要對ALU0下ALUctrl=0111就能夠知道SLT的結果了。
+
+<img src="https://i.imgur.com/oNNizsj.png" alt="image-20210506141907429" style="zoom:150%;" />
+
+
+
+
+
+### Introduce - 濂波進位加法器ALU
+
+可以注意到CarryIn，CarryOut的部分是串接的。
+
+這個部分可能會導致Delay很長，從LSB到MSB會經過很多個Gate，因此最好的方法是平行處理加法。
+
+<img src="https://i.imgur.com/ghF5jZx.png" alt="image-20210506140446444" style="zoom:150%;" />
+
+
+
+### Introduce - Carry-Lockhead加法器
+
+我們希望能夠讓每個Bit的Carry不用仰賴前面的ALU所產生的結果，就能夠知道每個Bit的Carry。
+
+透過加法器的進位真值表
+
+![image-20210506143358365](https://i.imgur.com/AFR4AWQ.png)
+
+我們可以知道，$\text{CarryOut} = (X \times \text{CarryIn}) + (Y \times \text{CarryIn}) + (X \times Y)$
+
+因此，我們可以知道，$\text{CarryIn}_1 = \text{CarryOut}_0 = (X_0 \times \text{CarryIn}_0) + (Y_0 \times \text{CarryIn}_0) + (X_0 + Y_0)$
+
+$\text{CarryIn}_2 = \text{CarryOut}_1 = (X_1 \times \text{CarryIn}_1) + (Y_1 \times \text{CarryIn}_1) + (X_1 + Y_1)$
+
+$= (X_1 \times X_0 \times Y_0) + (X_1\times X_0\times \text{CarryIn}_0) + (X_1\times Y_0\times \text{CarryIn}_0)$
+
+$+(Y_1\times X_0\times Y_0) + (Y_1 \times X_0 \times \text{CarryIn}_0) + (Y_1 \times Y_0 \times \text{CarryIn}_0) + (X_1\times Y_1)$
+
+因此我們要求$\text{CarryIn}_2$，只會需要$X_0, X_1, Y_0, Y_1, \text{CarryIn}_0$，而不用透過前一個ALU的運算結果
+
+即使前一個ALU再複雜，我們只需要這些值就能算出Carry了，就能有效的解決串接所造成的Delay問題。
+
