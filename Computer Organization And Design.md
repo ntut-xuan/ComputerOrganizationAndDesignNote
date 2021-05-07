@@ -1118,17 +1118,17 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 
 
-### Introduce - Carry-Lockhead加法器
+### Introduce - Carry Look-ahead加法器
 
 我們希望能夠讓每個Bit的Carry不用仰賴前面的ALU所產生的結果，就能夠知道每個Bit的Carry。
 
 透過加法器的進位真值表
 
-![image-20210506143358365](https://i.imgur.com/AFR4AWQ.png)
+![image-20210506143358365](https://i.imgur.com/v52b9Yq.png)
 
 我們可以知道，$\text{CarryOut} = (X \times \text{CarryIn}) + (Y \times \text{CarryIn}) + (X \times Y)$
 
-因此，我們可以知道，$\text{CarryIn}_1 = \text{CarryOut}_0 = (X_0 \times \text{CarryIn}_0) + (Y_0 \times \text{CarryIn}_0) + (X_0 + Y_0)$
+因此，我們可以知道，$\text{CarryIn}_1 = \text{CarryOut}_0 = (X_0 \times \text{CarryIn}_0) + (Y_0 \times \text{CarryIn}_0) + (X_0 \times Y_0)$
 
 $\text{CarryIn}_2 = \text{CarryOut}_1 = (X_1 \times \text{CarryIn}_1) + (Y_1 \times \text{CarryIn}_1) + (X_1 + Y_1)$
 
@@ -1140,3 +1140,120 @@ $+(Y_1\times X_0\times Y_0) + (Y_1 \times X_0 \times \text{CarryIn}_0) + (Y_1 \t
 
 即使前一個ALU再複雜，我們只需要這些值就能算出Carry了，就能有效的解決串接所造成的Delay問題。
 
+
+
+### Introduce - Carry Look-ahead的名詞
+
+
+
+接著我們定義兩個新的名詞：
+
+Generate Carry at Bit i: $G_i = A_i \times B_i$
+
+Propagate Carry at Bit i: $P_i = A_i + B_i$
+
+因此，上面的式子我們可以寫成
+
+$\text{CarryIn}_1 = \text{CarryIn}_0\times (P_0) + (G_0)$
+
+$\text{CarryIn}_2 = \text{CarryIn}_1 \times (P_1) + (G_1)$
+
+$= [\text{CarryIn}_0\times (P_0) + (G_0)]\times (P_1) + G_1$
+
+$= P_1 P_0 \text{CarryIn}_0 + P_1G_0 + G_1$
+
+$\text{CarryIn}_3 = \text{CarryIn}_2 \times P_2 + G_2$
+
+$= [P_1 P_0 \text{CarryIn}_0 + P_1G_0 + G_1] \times P_2 + G_2$
+
+$= P_0 P_1 P_2 \text{CarryIn}_0 + P_1 P_2 G_0 + G_1P_2 + G_2$
+
+
+
+透過上面的觀察，我們可以知道，如果$\text{CarryIn}_i$要進位，則
+
+$G_{i-1}$必須要為true (i.e. $A_{i-1}\times B_{i-1} = 1)$
+
+或者$G_{i-2}$必須要為true，且$P_{i-2}$必須要讓$G_{i-2}$來通過(i.e. $P_{i-2}$為true)
+
+或者$G_{i-3}$必須要為true，且$P_{i-2} \times P_{i-3}$必須要為true
+
+或者$G_{i-j}$必須要為true，且$P_{i-2} \times P_{i-3} \times ... \times P_{i-j}$必須要為true
+
+或者我們使用$\text{Cin}_0$，條件是$P_{i-2} \times P_{i-3} \times ... \times P_{0}$必須要為true
+
+
+
+### Introduce - Carry Look-ahead的延遲
+
+已知
+
+Generate Carry at Bit i: $G_i = A_i \times B_i$，delay = 1
+
+Propagate Carry at Bit i: $P_i = A_i + B_i$，delay = 1
+
+所以
+
+$\text{CarryIn}_1 = \text{CarryIn}_0\times (P_0) + (G_0)$，總共是3個delay
+
+$\text{CarryIn}_2 = P_1 P_0 \text{CarryIn}_0 + P_1G_0 + G_1$，總共是3個delay
+
+$\text{CarryIn}_3 = P_0 P_1 P_2 \text{CarryIn}_0 + P_1 P_2 G_0 + G_1P_2 + G_2$，總共是3個delay。
+
+所以$\text{CarryIn}$的delay幾乎為常數。
+
+
+
+### Introduce - Carry Look-ahead的電路
+
+實務上，我們不把Propagate建出來。
+
+<img src="https://i.imgur.com/tppJiPF.png" alt="image-20210507134908801" style="zoom:67%;" />
+
+建立完整的Carry-Lockhead很貴，而且當$\text{CarryIn}_{31}$的時候，電路會非常非常長，會拉低效能。
+
+所以我們會用兩種方法解決這個問題：
+
+「cascaded carry look-ahead adder」與「multiple level carry look-ahead adder」
+
+
+
+### Introduce - Cascaded Carry Look-ahead Adder
+
+把這一堆的Carry Lockahead adder串接起來，本身來說8-bit Carry Lockahead Adder進行Carry Lock-ahead。
+
+然後C8, C16, C24的方式把他做串接。
+
+![image-20210507140527645](https://i.imgur.com/tgbFwy9.png)
+
+
+
+### Introduce - Multiple Level Carry Look-ahead Adder
+
+稍微優化一下串接的delay。
+
+![image-20210507142138472](https://i.imgur.com/xNZ3J2o.png)
+
+C8, C16, C24的部分，我們可以製造出一個Super Propagate跟Super Generate。
+
+這樣就能把他化簡成一般的Lock-ahead了。
+
+舉個例子，已知$\text{CarryInput}_4 = G_3 + (P_3 G_2) + (P_3 P_2 G_1) + (P_3 P_2 P_1 G_0) + (P_3P_2P_1P_0\text{CarryInput}_0)$
+
+我們令$SG_0 = G_3 + (P_3 G_2) + (P_3 P_2 G_1) + (P_3 P_2 P_1 G_0) + (P_3P_2P_1P_0\text{CarryInput}_0)$
+
+$SP_0 = P_3 P_2 P_1 P_0$
+
+所以$\text{CarryInput}_4 =  SG_0 + SP_0 \times \text{CarryInput_0}$，Delay變成4個delay。
+
+根據上面，我們可以知道第$i$個$\text{8-bit Carry Lock-ahead}$，$\text{CarryInput}_{i+1} = SG_i + SP_i \times \text{CarryInput}_i$
+
+就能把區塊化簡成一個高階的Carry Lock-ahead，因此每個區塊的delay都是一樣的。
+
+
+
+
+
+### Introduce - Multiple Level Carry Lookahead Adder 的實作
+
+![image-20210507143301134](https://i.imgur.com/yseZP4Q.png)
