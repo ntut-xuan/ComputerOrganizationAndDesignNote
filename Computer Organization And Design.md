@@ -282,38 +282,38 @@ $\text{CPU Times} = \dfrac{\text{Instruction}}{\text{Program}} \times \dfrac{\te
 
 #### 2.1.2 MIPS組合語言
 
-| 指令           | 舉例                  | 意義                       | 註解                           |
-| -------------- | --------------------- | -------------------------- | ------------------------------ |
-| 加法           | ```add $s1,$s2,$s3``` | ```$s1=$s2+$s3```          | 三個暫存器運算元               |
-| 減法           | ```sub $s1,$s2,$s3``` | ```$s1=$s2-$s3```          | 三個暫存器運算元               |
-| 加立即值       | ```addi $s1,$s2,20``` | ```$s1=$s2+20```           | 加上常數                       |
-| 載入字組       | ```lw $s1, 20($s2)``` | ```$s1=Memory[$s2+20]```   | 字組由記憶體載入至暫存器       |
-| 儲存字組       | ```sw $s1, 20($s2)``` | ```Memory[$s2+20] = $s1``` | 字組由暫存器儲存至記憶體       |
-| 載入半字組     | ```lh $s1, 20($s2)``` | ```$s1 = Memory[$s2+20]``` | 半字組由記憶體載入至暫存器     |
-| 載入無號半字組 | ``lhu $s1, 20($s2)``  | ``$s1 = Memory[$s2+20]``   | 無號半字組由記憶體載入至暫存器 |
-| 儲存半字組     | ``sh $s1,20($s2)``    | ```Memory[$s2+20] = $s1``` | 半字組由暫存器儲存至記憶體     |
-| 載入位元組     | ```lb $s1,20($s)```   | ```$s1=Memory[$s2+20]```   | 位元組由記憶體載入至暫存器     |
-| 載入無號位元組 | ```lbu $s1,20($s2)``` | ```$s1=Memory[$s2+20]```   | 無號位元組由記憶體載入至暫存器 |
-| 儲存位元組     | ```sb $s1,20($s2)```  | ```Memory[$s2+20]=$s1```   | 位元組由暫存器儲存至記憶體     |
-| 載入連結的字元組       | ```ll $s1,20($s2)``` | ```$s1=Memory[$s2+20]``` | 作為不可分割的（記憶體與儲存器內容）<br />交換中第一部分的載入字元組 |
-| 條件式儲存字元組 | ```sc $s1,20($s2)``` | ```Memory[$s2+20]=$s1;$s1=0或1``` | 作為不可分割的（記憶體與儲存器內容）<br />交換中第二部分的載入字元組 |
-| 載入上半部立即值 | ```lui $s1, 20``` | ```$s1=20*65536$``` | 載入常數至較高的16位元 |
-| 及 | ```and $s1,$s2,$s3``` | ```$s1=$s2 & $s3``` | 三個暫存器運算元；逐位元的及運算 |
-| 或 | ```or $s1,$s2,$s3``` | ```$s1=$s2 | $s3``` | 三個暫存器運算元；逐位元的或運算 |
-| 反或 | ```nor $s1,$s2,$s3``` | ```$s1=~($s2 | $s3)``` | 三個暫存器運算元；逐位元的反或運算 |
-| 及立即值 | ```andi $s1,s2,20``` | ```$s1 = s2 & 20``` | 暫存器與常數做逐位元的及運算 |
-| 或立即值 | ```ori $s1,s2,20``` | ```$s1 = s2 & 20``` | 暫存器與常數做逐位元的或運算 |
-| 邏輯左移 | ```sll $s1,s2,10``` | ```$s1 = $s2 << 10``` | 左移常數個位元位置 |
-| 邏輯右移 | ```srl $s1,s2,10``` | ```$s1 = $s2 >> 10``` | 右移常數個位元位置 |
-| 若等於則分支 | ```beq $s1,$s2,25``` | 若```($s1==$s2)```則前往```PC+4+100``` | 等於測試：PC相對的分支 |
-| 若不等於則分支 | ```bne $s1,$s2,25``` | 若```($s1!=$s2)```則前往```PC+4+100``` | 不等於測試：PC相對的分支 |
-| 若小於則分支 | ```slt $s1,$s2,25``` | 若```($s2<$s3)```，`$s1=1`;<br />否則`$s1=0` | 小於比較，用於beq, bne |
-| 無號若小於則設定 | ```sltu $s1,$s2,$s3``` | 若```($s2<$s3)```，`$s1=1`;<br />否則`$s1=0` | 無號數的小於比較 |
-| 若小於立即值則設定 | ```slti $s1,$s2,20``` | 若`($s2<20)`，`$s1=1`;<br />否則`$s1=0` | 小於某常數的比較 |
-| 若無號小於立即值則設定 | ```sltiu $s1, $s2, 20``` | 若`($s2<20)`，`$s1=1`;<br />否則`$s1=0` | 無號數的小於某常數的比較 |
-| 跳躍 | ```j 2500``` | 前往10000 | 跳至目的位置 |
-| 透過暫存器跳躍 | ``jr $ra`` | 前往`$ra` | 用於switch敘述、程序返回 |
-| 跳躍並連結 | ```jal 2500``` | ``$ra=PC+4 前往 10000`` | 用於程序呼叫 |
+| 指令                   | 舉例                     | 意義                                         | 註解                                                         |
+| ---------------------- | ------------------------ | -------------------------------------------- | ------------------------------------------------------------ |
+| 加法                   | ```add $s1,$s2,$s3```    | ```$s1=$s2+$s3```                            | 三個暫存器運算元                                             |
+| 減法                   | ```sub $s1,$s2,$s3```    | ```$s1=$s2-$s3```                            | 三個暫存器運算元                                             |
+| 加立即值               | ```addi $s1,$s2,20```    | ```$s1=$s2+20```                             | 加上常數                                                     |
+| 載入字組               | ```lw $s1, 20($s2)```    | ```$s1=Memory[$s2+20]```                     | 字組由記憶體載入至暫存器                                     |
+| 儲存字組               | ```sw $s1, 20($s2)```    | ```Memory[$s2+20] = $s1```                   | 字組由暫存器儲存至記憶體                                     |
+| 載入半字組             | ```lh $s1, 20($s2)```    | ```$s1 = Memory[$s2+20]```                   | 半字組由記憶體載入至暫存器                                   |
+| 載入無號半字組         | ``lhu $s1, 20($s2)``     | ``$s1 = Memory[$s2+20]``                     | 無號半字組由記憶體載入至暫存器                               |
+| 儲存半字組             | ``sh $s1,20($s2)``       | ```Memory[$s2+20] = $s1```                   | 半字組由暫存器儲存至記憶體                                   |
+| 載入位元組             | ```lb $s1,20($s)```      | ```$s1=Memory[$s2+20]```                     | 位元組由記憶體載入至暫存器                                   |
+| 載入無號位元組         | ```lbu $s1,20($s2)```    | ```$s1=Memory[$s2+20]```                     | 無號位元組由記憶體載入至暫存器                               |
+| 儲存位元組             | ```sb $s1,20($s2)```     | ```Memory[$s2+20]=$s1```                     | 位元組由暫存器儲存至記憶體                                   |
+| 載入連結的字元組       | ```ll $s1,20($s2)```     | ```$s1=Memory[$s2+20]```                     | 作為不可分割的（記憶體與儲存器內容）<br />交換中第一部分的載入字元組 |
+| 條件式儲存字元組       | ```sc $s1,20($s2)```     | ```Memory[$s2+20]=$s1;$s1=0或1```            | 作為不可分割的（記憶體與儲存器內容）<br />交換中第二部分的載入字元組 |
+| 載入上半部立即值       | ```lui $s1, 20```        | ```$s1=20*65536$```                          | 載入常數至較高的16位元                                       |
+| 及                     | ```and $s1,$s2,$s3```    | ```$s1=$s2 & $s3```                          | 三個暫存器運算元；逐位元的及運算                             |
+| 或                     | ```or $s1,$s2,$s3```     | ```$s1=$s2 | $s3```                          | 三個暫存器運算元；逐位元的或運算                             |
+| 反或                   | ```nor $s1,$s2,$s3```    | ```$s1=~($s2 | $s3)```                       | 三個暫存器運算元；逐位元的反或運算                           |
+| 及立即值               | ```andi $s1,s2,20```     | ```$s1 = s2 & 20```                          | 暫存器與常數做逐位元的及運算                                 |
+| 或立即值               | ```ori $s1,s2,20```      | ```$s1 = s2 & 20```                          | 暫存器與常數做逐位元的或運算                                 |
+| 邏輯左移               | ```sll $s1,s2,10```      | ```$s1 = $s2 << 10```                        | 左移常數個位元位置                                           |
+| 邏輯右移               | ```srl $s1,s2,10```      | ```$s1 = $s2 >> 10```                        | 右移常數個位元位置                                           |
+| 若等於則分支           | ```beq $s1,$s2,25```     | 若```($s1==$s2)```則前往```PC+4+100```       | 等於測試：PC相對的分支                                       |
+| 若不等於則分支         | ```bne $s1,$s2,25```     | 若```($s1!=$s2)```則前往```PC+4+100```       | 不等於測試：PC相對的分支                                     |
+| 若小於則分支           | ```slt $s1,$s2,25```     | 若```($s2<$s3)```，`$s1=1`;<br />否則`$s1=0` | 小於比較，用於beq, bne                                       |
+| 無號若小於則設定       | ```sltu $s1,$s2,$s3```   | 若```($s2<$s3)```，`$s1=1`;<br />否則`$s1=0` | 無號數的小於比較                                             |
+| 若小於立即值則設定     | ```slti $s1,$s2,20```    | 若`($s2<20)`，`$s1=1`;<br />否則`$s1=0`      | 小於某常數的比較                                             |
+| 若無號小於立即值則設定 | ```sltiu $s1, $s2, 20``` | 若`($s2<20)`，`$s1=1`;<br />否則`$s1=0`      | 無號數的小於某常數的比較                                     |
+| 跳躍                   | ```j 2500```             | 前往10000                                    | 跳至目的位置                                                 |
+| 透過暫存器跳躍         | ``jr $ra``               | 前往`$ra`                                    | 用於switch敘述、程序返回                                     |
+| 跳躍並連結             | ```jal 2500```           | ``$ra=PC+4 前往 10000``                      | 用於程序呼叫                                                 |
 
 
 
@@ -495,9 +495,7 @@ A[300] = h + A[300];
 首先我們要先把C語言轉成MIPS指令
 
 ```
-lw $t1, 1200($t0)
-add $t0, $t1, $s2
-sw $t1, 1200($t0)
+lw $t1, 1200($t0)add $t0, $t1, $s2sw $t1, 1200($t0)
 ```
 
 
@@ -585,7 +583,7 @@ $t1 = 0000 0000 0000 0000 0000 0000 1001 0000
     ```
 
     若register 1內含的值與register 2內含的值不同，則接下來執行被標記為L1的敘述。
-  
+
 - MIPS組合語言包含有一暫存器跳躍(jump register, jr)指令，意為無條件跳躍至暫存器內容所示之位址處。
 
 - 通常來說，我們會用I-format來構造bne/beq指令
@@ -619,12 +617,7 @@ if(i == j) f=g+h else f=g-h
 
 
 ```
-bne $s3, $s4, Else          #若i≠j則跳到Else
-add $s0, $s1, $s2           #把$s1, $s2相加並且assign到$s0
-j Exit                      #跳躍至Exit
-
-Else: sub $s0, $s1, $s2
-Exit: 
+bne $s3, $s4, Else          #若i≠j則跳到Elseadd $s0, $s1, $s2           #把$s1, $s2相加並且assign到$s0j Exit                      #跳躍至ExitElse: sub $s0, $s1, $s2Exit: 
 ```
 
 ​	
@@ -634,23 +627,13 @@ Exit:
 設i及k在暫存器`$s3`及`$s5`中且save數列的基底位址在`$s6`中。相對於此C片段的MIPS組合碼為何？
 
 ```
-while(save[i] == k){
-	i += 1;
-}
+while(save[i] == k){	i += 1;}
 ```
 
 
 
 ```
-Loop: sll $t1, $s3, 2  #暫時暫存器$t1=i*4
-
-add  $t1, $t1, $s6     # t1 = save[i]的位址
-lw   $t0, 0($t1)       # 暫時暫存器$t0=save[i]
-bne  $t0, $s5, Exit    # 若save[i]≠k則前往Exit
-addi $s3, $s3, 1       # i = i + 1
-j Loop                 # 前往Loop
-
-Exit:
+Loop: sll $t1, $s3, 2  #暫時暫存器$t1=i*4add  $t1, $t1, $s6     # t1 = save[i]的位址lw   $t0, 0($t1)       # 暫時暫存器$t0=save[i]bne  $t0, $s5, Exit    # 若save[i]≠k則前往Exitaddi $s3, $s3, 1       # i = i + 1j Loop                 # 前往LoopExit:
 ```
 
 
@@ -799,18 +782,13 @@ beq  $t0, $zero, IndexOutOfBounds
 ##### An Example of Passing Argument
 
 ```
-int doh(int i, int j, int k, int l, int m, char c, int n){
-	return i+j+n
-}
+int doh(int i, int j, int k, int l, int m, char c, int n){	return i+j+n}
 ```
 
 
 
 ```
-doh: lw  $t0, 4($sp)
-     add $a0, $a0, $a1
-     add $v0, $a0, $t0
-     jr  $ra
+doh: lw  $t0, 4($sp)     add $a0, $a0, $a1     add $v0, $a0, $t0     jr  $ra
 ```
 
 
@@ -820,11 +798,7 @@ doh: lw  $t0, 4($sp)
 ##### Leaf Procedure Example
 
 ```
-int leaf_example(int g, h, i, j){
-	int f;
-	f = (g + h) - (i + j);
-	return f;
-}
+int leaf_example(int g, h, i, j){	int f;	f = (g + h) - (i + j);	return f;}
 ```
 
 
@@ -836,15 +810,7 @@ int leaf_example(int g, h, i, j){
 - 回傳值到`$v0`
 
 ```
-leaf_example: addi $sp, $sp, -4
-			  sw   $s0, 0($sp)      # 把$s0存到stack上，這是callee的義務
-			  add  $t0, $a0, $a1    
-			  add  $t1, $a2, $a3
-			  sub  $s0, $t0, $t1
-			  add  $v0, $s0, $zero  # 運行程式
-			  lw   $s0, 0($sp)      
-			  addi $sp, $sp, 4      # 還原$s0，這是callee的義務
-			  jr   $ra              # 回傳
+leaf_example: addi $sp, $sp, -4			  sw   $s0, 0($sp)      # 把$s0存到stack上，這是callee的義務			  add  $t0, $a0, $a1    			  add  $t1, $a2, $a3			  sub  $s0, $t0, $t1			  add  $v0, $s0, $zero  # 運行程式			  lw   $s0, 0($sp)      			  addi $sp, $sp, 4      # 還原$s0，這是callee的義務			  jr   $ra              # 回傳
 ```
 
 
@@ -862,13 +828,7 @@ leaf_example: addi $sp, $sp, -4
 ##### Non-Leaf Procedure Example
 
 ```
-int fact(int n){
-	if (n < 1){
-		return 1;
-	}else{
-		return n * fact(n-1);
-	}
-}
+int fact(int n){	if (n < 1){		return 1;	}else{		return n * fact(n-1);	}}
 ```
 
 - 變數n在`$a0`
@@ -877,22 +837,7 @@ int fact(int n){
 
 
 ```
-fact:
-     addi $sp, $sp, -8    #讓stack儲存兩個東西(caller的義務)
-     sw   $ra, 4($sp)
-     sw   $a0, 0($sp)
-     slti $t0, $a0, 1     #如果$a0小於1，那$t0就會被設置成0
-     beq  $t0, $zero, L1  #如果$t0不等於0，那就會跳到L1
-     addi $v0, $zero, 1   #如果是0的話，那就把return 1加回去
-     addi $sp, $sp, 8     #把stack前面兩個東西pop掉
-     jr   $ra             
-L1:  addi $a0, $a0, -1    #實作n-1
-     jal  fact            #跳到fact，並且將$ra設置成下面的(PC+4)
-     lw   $a0, 0($sp)     #恢復之前的$a0
-     lw   $ra, 4($sp)     #恢復之前的$ra
-     addi $sp, $sp, 8     #把stack前面兩個東西pop掉
-     mul  $v0, $a0, $v0   #把$a0跟$v0做相乘
-     jr   $ra
+fact:     addi $sp, $sp, -8    #讓stack儲存兩個東西(caller的義務)     sw   $ra, 4($sp)     sw   $a0, 0($sp)     slti $t0, $a0, 1     #如果$a0小於1，那$t0就會被設置成0     beq  $t0, $zero, L1  #如果$t0不等於0，那就會跳到L1     addi $v0, $zero, 1   #如果是0的話，那就把return 1加回去     addi $sp, $sp, 8     #把stack前面兩個東西pop掉     jr   $ra             L1:  addi $a0, $a0, -1    #實作n-1     jal  fact            #跳到fact，並且將$ra設置成下面的(PC+4)     lw   $a0, 0($sp)     #恢復之前的$a0     lw   $ra, 4($sp)     #恢復之前的$ra     addi $sp, $sp, 8     #把stack前面兩個東西pop掉     mul  $v0, $a0, $v0   #把$a0跟$v0做相乘     jr   $ra
 ```
 
 
@@ -921,7 +866,7 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 ## 3. Arithmetic for Computers
 
-### Introduce - 加法跟減法
+### 加法跟減法
 
 在二進制作加法、減法跟在十進制作加法差不多概念，就是從右加或減到左
 
@@ -947,7 +892,7 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 
 
-### Introduce - 溢位
+### 溢位
 
 若一個有號數用32個bit所儲存，則做相加或相減可能會使有號數結果超過32個bit，超出變成33個bit
 
@@ -967,7 +912,7 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 
 
-### Introduce - ALU的功能介紹
+### ALU的功能介紹
 
 ![image-20210429170540124](https://i.imgur.com/XaNa9ik.png)
 
@@ -994,7 +939,7 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 
 
-### Introduce - 設計ALU的指南
+### 設計ALU的指南
 
 #### Trick 1 - 分而治之
 
@@ -1014,25 +959,25 @@ L1:  addi $a0, $a0, -1    #實作n-1
 
 
 
-### Introduce - 實作1-bit ALU
+### 實作1-bit ALU
 
 <img src="https://i.imgur.com/73qpL0G.png" alt="image-20210429173417536" style="zoom:67%;" />
 
 
 
-### Introduce - 實作4-bit ALU
+### 實作4-bit ALU
 
 <img src="https://i.imgur.com/bIcHcyf.png" alt="image-20210429173837604" style="zoom:67%;" />
 
 
 
-### Introduce - 實作ALU Subtract
+### 實作ALU Subtract
 
 利用補數，A+(-B) = A-B
 
 ![image-20210429174433977](https://i.imgur.com/U0nt1QA.png)
 
-### Introduce - 實作32-bit ADD串接加法
+### 實作32-bit ADD串接加法
 
 由於加法與減法皆為二補數加法、減法，所以對於MSB、LSB的部份我們要稍微做一點修改。
 
@@ -1054,7 +999,7 @@ LSB：
 
 
 
-### Introduce - 實作溢位偵測
+### 實作溢位偵測
 
 $\text{Overflow} = \text{CarryIn[n-1]} \oplus \text{CarrayOut[n-1]}$
 
@@ -1072,7 +1017,7 @@ $\text{Overflow} = \text{CarryIn[n-1]} \oplus \text{CarrayOut[n-1]}$
 
 
 
-### Introduce - 實作NOR運算子
+### 實作NOR運算子
 
 $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
@@ -1084,7 +1029,7 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 
 
-### Introduce - 實作零檢測
+### 實作零檢測
 
 我們只需要把Result全部連到一個NOR上，若Result存在一個1，則必使NOR=0。
 
@@ -1092,7 +1037,7 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 
 
-### Introduce - 實作SLT運算子
+### 實作SLT運算子
 
 如果$A<B$，那麼第一個暫存器的LESS應該要等於1
 
@@ -1108,7 +1053,7 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 
 
-### Introduce - 濂波進位加法器ALU
+### 濂波進位加法器ALU
 
 可以注意到CarryIn，CarryOut的部分是串接的。
 
@@ -1118,7 +1063,7 @@ $\overline{A+B} = \overline{A}\cdot \overline{B}$
 
 
 
-### Introduce - Carry Look-ahead加法器
+### Carry Look-ahead加法器
 
 我們希望能夠讓每個Bit的Carry不用仰賴前面的ALU所產生的結果，就能夠知道每個Bit的Carry。
 
@@ -1142,7 +1087,7 @@ $+(Y_1\times X_0\times Y_0) + (Y_1 \times X_0 \times \text{CarryIn}_0) + (Y_1 \t
 
 
 
-### Introduce - Carry Look-ahead的名詞
+### Carry Look-ahead的名詞
 
 
 
@@ -1184,7 +1129,7 @@ $G_{i-1}$必須要為true (i.e. $A_{i-1}\times B_{i-1} = 1)$
 
 
 
-### Introduce - Carry Look-ahead的延遲
+### Carry Look-ahead的延遲
 
 已知
 
@@ -1204,7 +1149,7 @@ $\text{CarryIn}_3 = P_0 P_1 P_2 \text{CarryIn}_0 + P_1 P_2 G_0 + G_1P_2 + G_2$�
 
 
 
-### Introduce - Carry Look-ahead的電路
+### Carry Look-ahead的電路
 
 實務上，我們不把Propagate建出來。
 
@@ -1218,7 +1163,7 @@ $\text{CarryIn}_3 = P_0 P_1 P_2 \text{CarryIn}_0 + P_1 P_2 G_0 + G_1P_2 + G_2$�
 
 
 
-### Introduce - Cascaded Carry Look-ahead Adder
+### Cascaded Carry Look-ahead Adder
 
 把這一堆的Carry Lockahead adder串接起來，本身來說8-bit Carry Lockahead Adder進行Carry Lock-ahead。
 
@@ -1228,7 +1173,7 @@ $\text{CarryIn}_3 = P_0 P_1 P_2 \text{CarryIn}_0 + P_1 P_2 G_0 + G_1P_2 + G_2$�
 
 
 
-### Introduce - Multiple Level Carry Look-ahead Adder
+### Multiple Level Carry Look-ahead Adder
 
 稍微優化一下串接的delay。
 
@@ -1254,6 +1199,98 @@ $SP_0 = P_3 P_2 P_1 P_0$
 
 
 
-### Introduce - Multiple Level Carry Lookahead Adder 的實作
+### Multiple Level Carry Lookahead Adder 的實作
 
 ![image-20210507143301134](https://i.imgur.com/yseZP4Q.png)
+
+
+
+### 乘法概念
+
+我們利用長乘法(直式乘法)來進行乘法。
+
+例如$1000_{(2)}\times 1001_{(2)} = 1001000_{(2)}$
+
+![image-20210508113648400](https://i.imgur.com/IlPevGZ.png)
+
+
+
+### 乘法觀察
+
+透過上面的觀察，可以知道當$n$個bit乘以$m$個bit，結果最多會有$n+m$個bit。
+
+再仔細觀察，我們可以知道：
+
+令被乘數為$M$且乘數為$m$，則若$m_i = 1$時，就Copy一次$M$加至結果，若$m_i = 0$時，就加0，加完之後左移一格。
+
+
+
+### 乘法在硬體上的概念
+
+透過上面的乘法結果，我們可以知道：
+
+令被乘數為$M$且乘數為$Q$
+
+第一個bit單純只有$M_1 \times Q_1$
+
+第二個bit為$Q_0 \times M_1 + Q_1 \times M_0$
+
+第三個bit為$Q_1 \times M_2 + Q_2 \times M_1 + Q_3 \times M_0$
+
+依照這個概念，我們可以畫出這一張圖
+
+![image-20210508115159802](https://i.imgur.com/wQztWvf.png)
+
+其中
+
+![image-20210508115216548](https://i.imgur.com/RyoDp7e.png)
+
+
+
+因此，我們可以回來理解這一張圖
+
+<img src="https://i.imgur.com/DJvjhzI.png" alt="image-20210508115659741" style="zoom:80%;" />
+
+運作原理可以歸納成這一張圖
+
+<img src="https://i.imgur.com/NkORZR3.png" alt="image-20210508120540514" style="zoom: 80%;" />
+
+如果被乘數的LSB=1，就把乘數與暫存在Product的前一個結果做相加。
+
+接著把被乘數右移，乘數左移，確定是不是第32位，如果是就跳出，否就回去第一個步驟。
+
+
+
+### 乘法在硬體上的實作：版本1
+
+製作一個32bit的乘法器，我們需要一個64bit的乘數暫存器，32bit的被乘數暫存器，64bit的ALU，以及64bit的乘法結果暫存器。
+
+原因是乘數每做一次步驟就要往左推一次，所以64bit才能存取32bit的乘數乘法過程所產出的0。
+
+<img src="https://i.imgur.com/73XogM5.png" alt="image-20210508121236354" style="zoom:67%;" />
+
+做完乘法後，會長得像這樣
+
+<img src="https://i.imgur.com/3ouQ26O.png" alt="image-20210508121257118" style="zoom:67%;" />
+
+觀察一下這個做法，可以知道
+
+1. Multiplicand很佔空間，一半以上都是0
+2. 每做一次乘法大概需要花上快100個$Clock$，左移與右移加上加法以及一些細碎的東西，$32\times3+start \approx 100$
+3. 要把Product結果存起來很浪費空間
+
+也許我們可以
+
+1. 取代乘數左移，被乘數右移的部分
+2. 把乘數與Product弄成一塊暫存器
+
+
+
+### 乘法在硬體上的實作：版本2
+
+![image-20210508122914173](https://i.imgur.com/M5jSZnk.png)
+
+我們用一個32bit的乘數暫存器，32bit的ALU，以及一個64bit的Product暫存器，這個Product暫存器可以寫入以及右移
+
+
+
