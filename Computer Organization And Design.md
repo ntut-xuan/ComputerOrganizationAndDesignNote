@@ -1357,3 +1357,116 @@ $SP_0 = P_3 P_2 P_1 P_0$
 
 
 
+### 手算除法
+
+用筆操作一下除法
+
+<img src="https://i.imgur.com/VFPvTGP.png" alt="image-20210510153946292" style="zoom:67%;" />
+
+可以知道，除法是被除數連減除數的過程
+
+我們可以知道，如果被除數小於除數，則我們在商的最右邊加上一個0，接著把下一個被除數的bit帶下來
+
+如果被除數大於等於除數，則我們在商的最右邊加上一個1，並且把被除數減去餘數。
+
+如果餘數是負的，那我們就把餘數再加上除數，使其變成正
+
+如同以下的結果。
+
+<img src="https://i.imgur.com/xSwSfUn.png" alt="image-20210510154309561" style="zoom:67%;" />
+
+### 在硬體上的除法：版本1
+
+我們使用一個32bits的Quotient暫存器來儲存結果，用兩個64bits的暫存器，用來分別儲存Divisor與Remainder
+
+以及一個64-bit的ALU，而divisor的部分，我們預設先分給左半邊的32bits，預設dividend的部分，我們放在Remainder暫存器上
+
+<img src="https://i.imgur.com/YOs68fp.png" alt="image-20210510154532872" style="zoom:67%;" />
+
+<img src="https://i.imgur.com/x4VVlVW.png" alt="image-20210510161920712" style="zoom:67%;" />
+
+當所有的運算結束之後，Divisor的暫存器左半部會全部移至右半部。
+
+<img src="https://i.imgur.com/j706rP2.png" alt="image-20210510162017603" style="zoom:67%;" />
+
+運算想法如下：
+
+```
+第一個步驟，先把Dividend與Remainder的部分先放置好
+
+接著每一次進行除法時，我們將Remainder register減去Divisor register
+
+如果Remainder register大於0，則代表Remainder register > Divisor Register
+這時候我們把Quotient register左移一格，並將最右邊的bit設置為1
+
+如果Remainder register小於0，則代表Remainder register < Divisor Register
+因為餘數不能是負的，所以我們把原本的餘數加回去原先的樣子，也就是加上Divisor Register
+接著我們把Quotient register左移一格，並將最右邊的bit設置為0
+
+接著我們把Divisor的部分右移一格，如果bit已經運算到第33位，則結束運算，否則繼續進行除法
+```
+
+
+
+<img src="https://i.imgur.com/HcNwqFW.png" alt="image-20210510162202994" style="zoom:67%;" />
+
+因此，透過這個演算法，試著去運算$0111_{(2)}/0010_{(2)}$，得到以下的結果：
+
+<img src="https://i.imgur.com/XlqrLjM.png" alt="image-20210510162736810" style="zoom:67%;" />
+
+觀察版本1的模式，我們可以知道
+
+1. Divisor在運算結束後，一半以上的空間都為0
+2. 64-bit adder很浪費，用不到這麼多
+
+所以其實我們可以考慮
+
+1. 如同除法一樣，把位移所需要的空間進行壓縮
+2. 似乎可以把結果跟Remainder的暫存器併在一起
+3. 1st step cannot produce a 1 in quotient bit (otherwise quotient is too big for the register)
+
+
+
+### 改善版本1的問題
+
+![image-20210510163347324](https://i.imgur.com/E367kj3.png)
+
+看起來很像乘法器，所以乘法器也許可以當成除法器用。
+
+每一個Cycle做一次除法中的減法。
+
+
+
+
+
+### 在硬體上的除法：版本2
+
+電路開始時，我們將Dividend放在Remainder暫存器的右半邊
+
+<img src="https://i.imgur.com/1rthjnC.png" alt="image-20210510163659200" style="zoom:67%;" />
+
+當除法運行結束之後，商會在Remainder暫存器的右半邊，餘數會在Remainder的左半邊
+
+接著我們把Divisor的暫存器壓縮到只需要32bit的暫存器，以及原先的Quotient暫存器拋棄不用。
+
+運算想法如下：
+
+```
+在一開始時，我們將Dividend放在Remainder暫存器的右半部。
+
+接著進行除法，先把Remainder register左移一格，用Divisor Register減去Remainder register的左半邊暫存器
+接著把結果放在Remainder register的左半邊暫存器
+
+接著判斷Remainder register的大小，如果大於等於0，那就把Remainder register左移一格，並且設置最右邊的bit為1
+如果小於0，那就把Divisor Register加回去左半邊的remainder暫存器，然後把結果存在左半邊的remainder暫存器
+接著一樣把Remainder register左移一格，並且設置最右邊的bit為0。
+
+如果bit已經處理了32個，那就結束除法，並且將Remainder整個右移一格，如果還沒就繼續除法
+```
+
+<img src="https://i.imgur.com/OalfCiy.png" alt="image-20210510165243780" style="zoom: 67%;" />
+
+使用這個方式進行$0111_{(2)}/0010_{(2)}$，得到以下結果
+
+<img src="https://i.imgur.com/V9pZAYN.png" alt="image-20210510165344145" style="zoom:67%;" />
+
