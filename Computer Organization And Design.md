@@ -1353,7 +1353,7 @@ $SP_0 = P_3 P_2 P_1 P_0$
 ### 更快的乘法做法
 
 1. 我們可以建立Wallace tree，用很多個ALU串接，然後Carry傳到下一級來做進位，這樣64個bit會需要64個ALU
-2. 銀彈法則，利用multiple adders，要花費超級多ALU，好處是多個乘法運行可以直接平行處理
+2. 銀彈法則，利用multiple adders，要花費超級多ALU，好處是多個乘法運行可以指令管線化。
 
 
 
@@ -1500,11 +1500,11 @@ $\text{Dividend} = \text{Quotient} \times \text{Divisor} + \text{Remainder}$
 
 一個32-bit的Multiplicand/Divisor暫存器，一個32-bit的ALU，一個64-bit的Product/Remainder暫存器。
 
-<img src="https://i.imgur.com/BvUA9bZ.png" alt="image-20210511105955360" style="zoom:67%;" />
+<img src="https://i.imgur.com/Zcux7BD.png" alt="image-20210511105955360" style="zoom:67%;" />
 
 ### 快速除法
 
-除法並不能夠平行處理，因為remainder的正負關係。
+除法並不能夠指令管線化，因為remainder的正負關係。
 
 一種快速除法：SRT divison，在每個除法步驟時，製造出其他的除數bit來達成快速除法，但依然會需要乘法的步驟。
 
@@ -1516,11 +1516,11 @@ $\text{Dividend} = \text{Quotient} \times \text{Divisor} + \text{Remainder}$
 
 用來儲存科學記號，像這些
 
-<img src="https://i.imgur.com/xLsJOp2.png" alt="image-20210511111355038" style="zoom:67%;" />
+<img src="https://i.imgur.com/ycFYMLW.png" alt="image-20210511111355038" style="zoom:67%;" />
 
 也可以拿來儲存二進制的浮點數，像
 
-<img src="https://i.imgur.com/z9FDK4d.png" alt="image-20210511111431995" style="zoom:67%;" />
+<img src="https://i.imgur.com/GtfRv4H.png" alt="image-20210511111431995" style="zoom:67%;" />
 
 我們使用64-bit儲存Double的浮點數，使用32-bit儲存float的浮點數。
 
@@ -1530,7 +1530,7 @@ $\text{Dividend} = \text{Quotient} \times \text{Divisor} + \text{Remainder}$
 
 ### 二進位浮點數的呈現方式
 
-![image-20210511111611935](https://i.imgur.com/1jqvUh1.png)
+![image-20210511111611935](https://i.imgur.com/iWwHYzo.png)
 
 
 
@@ -1594,3 +1594,44 @@ $S = 1$，$\text{Fraction} = 0100000...00_{(2)}$，$\text{Exponent} = 10000001_{
 
 因此$x = (-1)^1 + (1 + 01_{(2)}) \times 2^{(129-127)} = (-1)\times1.25\times 2^2 = -5.0$
 
+
+
+### 浮點數的加法
+
+假設我們考慮四位數十進制浮點數加法。
+
+$9.999\times 10^1 + 1.610\times 10^{-1}$
+
+我們先讓小數點對齊，也就是小的指數往大的指數靠齊
+
+$9.999\times 10^1 + 0.061\times 10^1$
+
+將兩個數字做加法，也就是$9.999\times 10^1 + 0.061\times 10^1 = 10.015 \times 10^1$
+
+接著把他做調整，使他符合科學記號的定義，得到$1.0015\times 10^2$
+
+如果有需要的話，可以將他做四捨五入等調整，得到$1.002\times 10^2$
+
+
+
+### 浮點數加法的硬體實作
+
+比整數加法還要複雜。
+
+如果要在一個Clock Cycle內完成浮點數加法的部分，那一定比整數加法的耗時還要久。
+
+如果Clock很慢，就會順勢影響到所有的指令。
+
+所以浮點數加法通常會耗費很多個Cycle，且浮點數加法可以被管線化。
+
+結構上大概長這樣
+
+![image-20210511135004160](https://i.imgur.com/QcHnuAu.png)
+
+### 浮點數運算子的硬體實作
+
+浮點運算中，乘法跟加法的複雜度差不多，但是有效位數的部分使用的是乘法器而不是加法器。
+
+浮點數運算子的硬體實作通常做：加法、減法、乘法、除法、倒數、開根號。
+
+且運算子通常會耗費很多個Cycle，運算子也可以被管線化。
