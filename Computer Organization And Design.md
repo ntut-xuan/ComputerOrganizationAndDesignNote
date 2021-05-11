@@ -1470,3 +1470,127 @@ $SP_0 = P_3 P_2 P_1 P_0$
 
 <img src="https://i.imgur.com/V9pZAYN.png" alt="image-20210510165344145" style="zoom:67%;" />
 
+### 有號數的除法
+
+在手做有號數的除法時，我們會把被除數與除數換成正的，然後做除法，再把號補上去就好。
+
+硬體上的有號數除法，我們的最終目標是讓被除數與餘數的正負一致。
+
+如果除數與被除數的相除結果正負與商的正負不一致，那就把商做一次反相(就是乘以-1)。
+
+這樣結果就會符合這個等式
+
+$\text{Dividend} = \text{Quotient} \times \text{Divisor} + \text{Remainder}$
+
+
+
+至於Quotient會不會過大呢
+
+假設$\text{Divisor} = 1$，那$\text{Remainder} = 0$，因此若$\text{Dividend}$是一個64bits的數字，那$\text{Quotient}$就會是個64bits的數字。
+
+
+
+### 觀察：乘法與除法
+
+乘法與除法共用同一個硬體設備，只需要可以控制Remainder/Product暫存器的左移右移，即可把乘法器當成除法器。
+
+
+
+### 硬體上的乘除法器
+
+一個32-bit的Multiplicand/Divisor暫存器，一個32-bit的ALU，一個64-bit的Product/Remainder暫存器。
+
+<img src="https://i.imgur.com/BvUA9bZ.png" alt="image-20210511105955360" style="zoom:67%;" />
+
+### 快速除法
+
+除法並不能夠平行處理，因為remainder的正負關係。
+
+一種快速除法：SRT divison，在每個除法步驟時，製造出其他的除數bit來達成快速除法，但依然會需要乘法的步驟。
+
+
+
+### 二進位浮點數
+
+用來儲存不完整的除法的數字，例如$1/3=0.33333...$
+
+用來儲存科學記號，像這些
+
+<img src="https://i.imgur.com/xLsJOp2.png" alt="image-20210511111355038" style="zoom:67%;" />
+
+也可以拿來儲存二進制的浮點數，像
+
+<img src="https://i.imgur.com/z9FDK4d.png" alt="image-20210511111431995" style="zoom:67%;" />
+
+我們使用64-bit儲存Double的浮點數，使用32-bit儲存float的浮點數。
+
+在Normalized floating point中，小數點前是一個1，則我們會說他是Normalized floating point。
+
+
+
+### 二進位浮點數的呈現方式
+
+![image-20210511111611935](https://i.imgur.com/1jqvUh1.png)
+
+
+
+在Normalized floating point中，我們可以知道前面的第一個數字是1，因此Fraction的部分我們直接不用呈現他，因此我們多了一個bit可以拿來做事。
+
+但是這樣也會有一個問題，就是我們沒辦法呈現小數點前為0的結果。
+
+
+
+而指數的部分則為Exponenet - Bias的部分是無號數，在Double的浮點數，Bias為1023，在Single的Bias為127。
+
+
+
+### 浮點數的呈現範圍
+
+考慮Single Fraction最小的呈現範圍，也就是讓Exponent = 00000001，Fraction = 00000....00000
+
+則Exponent會是-126，結果會是$\pm 1.0 \times  2^{-126} \approx \pm 1.2 \times 10^{-38}$
+
+考慮最大的呈現範圍，也就是讓Exponent = 11111110，Fraction = 11111....11111
+
+則Exponent會是127，結果會大概為$\pm 2.0 \times 2^{126} \approx \pm 1.2 \times 10^{38}$
+
+考慮Double Fraction最小的呈現範圍，也就是讓Exponenet = 00000000001，Fraction = 00000...00000
+
+則Exponent會是-1022，結果會是$\pm 1.0 \times 2^{-1022} \approx 2.2 \times 10^{-308}$
+
+考慮Double Fraction最小的呈現範圍，也就是讓Exponenet = 11111111110，Fraction = 11111...11111
+
+則Exponent會是1023，結果會大概為$\pm 2.0 \times 2^{1023} \approx 1.8 \times 10^{308}$
+
+
+
+### 浮點數的精確度
+
+在浮點數中的Fraction，是個有號數。
+
+在Single的Fraction中，精確度約為$2^{-23}$bits，換算大概是$23 \log 2 \approx 6$，因此在十進制中，只能精確呈現小數點後六位的數字
+
+在Double的Fraction中，精確度約為$2^{-52}$bits，換算大概是$52 \log 2 \approx 16$，因此在十進制中，只能精確呈現小數點後十六位的數字
+
+
+
+舉個例子，若我們要呈現-0.75，則$-0.75 = (-1)^1 \times 1.1_{(2)} \times 2^{-1}$
+
+所以可以知道，$S=1$，Fraction的精確度為$1000...00000_{(2)}$
+
+Exponenet = -1 - Bias
+
+如果是Single即為$-1-127=-128(\text{signed}) = 126(\text{unsigned}) = 01111110_{(2)}$
+
+如果是Double即為$-1 - 1023 = -1024(\text{signed}) = 1022(\text{unsigned}) = 01111111110_{(2)}$
+
+因此Single為$\color{purple}{1}\color{green}{01111110}\color{black}1000…00_{(2)}$，Double為$\color{purple}{1}\color{green}{01111111110}\color{black}{1000…00_{(2)}}$
+
+
+
+再舉個例子，若我們要知道11000000101000…00的結果，則
+
+$S = 1$，$\text{Fraction} = 0100000...00_{(2)}$，$\text{Exponent} = 10000001_{(2)} = 129$
+
+因此$x = (-1)^1 + (1 + 01_{(2)}) \times 2^{(129-127)} = (-1)\times1.25\times 2^2 = -5.0$
+
