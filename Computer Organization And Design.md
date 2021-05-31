@@ -2010,3 +2010,53 @@ rs[25:21]的部份，即為第一個指令元素，因此接在讀取暫存器1�
 
 這樣就完成了一整個R-format指令的運作。
 
+
+
+下圖展示一次執行取數指令的運作原理
+
+<img src="https://i.imgur.com/raZnW48.png" alt="image-20210531094714792" style="zoom:67%;" />
+
+首先，Branch = 0，所以PC=PC+4。
+
+PC經過Instruction Memory後，由於讀取指令的Write register是rt，所以RegDst = 0。
+
+I-format中記憶體位置由後面16個bit決定，因此會經過Sign-extend單元擴增成32位元，來源為後16bit因此ALUSrc = 1。
+
+ALUOp輸入至ALU control來控制ALU。
+
+經過ALU的計算之後，輸入至Data Memory，我們要讀取記憶體，所以MemRead = 1，不用寫入記憶體所以MemWrite=0。
+
+由於讀出來的東西是要寫入暫存器的，所以MemtoReg = 1，也由於要寫入記憶體，所以RegWrite = 1。
+
+
+
+下圖展示一次執行分支指令的運作原理
+
+<img src="https://i.imgur.com/ibTcPpu.png" alt="image-20210531095654877" style="zoom:67%;" />
+
+由於要做分支指令，所以Branch=1。
+
+我們需要兩個暫存器來進行讀取，因為不用寫入所以不用寫入暫存器，RegDest = 0, RegWrite = 0。
+
+由於j-format的部份，跳躍的目標地址是指令的後16個bit，因此擴展成32個bit後，輸入至左移元件左移兩格。
+
+ALUOp輸入至ALU control來控制ALU。
+
+由於信號來源是後16bit的地址，所以ALUSrc = 1。
+
+由於不需要進行記憶體的讀取與寫入，也不用寫入暫存器，因此MemRead=0，Memtoreg=0，Regwrite=0，MemWrite=0。
+
+經過ALU進行比較運算後，確定是否為0來決定是否分支。
+
+如果運算結果為0，則不分支，因此PC=PC+4。
+
+如果運算結果為1，則分支，因此PC=目標地址+4。
+
+
+
+#### 為什麼不用單週期設計
+
+耗時問題。
+
+
+
