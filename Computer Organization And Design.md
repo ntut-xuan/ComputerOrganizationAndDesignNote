@@ -2467,3 +2467,48 @@ add $14, $5, $6
 
 ![image-20210611020903646](https://i.imgur.com/DDoKcgy.png)
 
+
+
+### 4.7 資料風險：旁路與阻塞
+
+分析以下的程式碼
+
+```MIPS
+sub $2,  $1, $3
+and $12, $2, $5
+or  $13, $6, $2
+add $14, $2, $2
+sw  $15, 100($2)
+```
+
+後四條指令的參數取決於前面第一條指令的結果，如果第一條指令運算的結果是-20，那麼後四條存取結果也應該是-20。
+
+我們可以用多時鐘週期流水線來呈現這個程式碼的運作流程。
+
+<img src="https://i.imgur.com/Tp5ShQ0.png" alt="image-20210617145025205" style="zoom:67%;" />
+
+可以發現，後四條指令因為第一條指令的WB級尚未運作，因此造成了前兩條指令讀到的值均為10，這就是資料風險。
+
+其中，我們可以知道，其實sub指令在第三級ALU運算結束後，就會有值了。
+
+因此，其實我們可以直接用旁路把值提前送進下一個指令的ALU上，以下列舉四個可能的傳送方式
+
+```
+EX/MEM RegisterRd = ID/EX RegisterRs
+EX/MEM RegisterRd = ID/EX RegisterRt
+MEM/WB RegisterRd = ID/EX RegisterRs
+MEM/WB RegisterRd = ID/EX RegisterRt
+```
+
+其中前面是流水線暫存器(EX/MEM)，後面是目標暫存器(RegisterRd)
+
+等號左邊來源，等號右邊是目標。
+
+<img src="https://i.imgur.com/liZbTQT.png" alt="image-20210617150321596" style="zoom:67%;" />
+
+回來看程式，可以發現
+
+對於sub→and，我們可以用EX/MEM RegisterRd = ID/EX RegisterRs
+
+對於sub→or，我們可以用MEM/WB RegisterRd = ID/EX RegisterRt
+
