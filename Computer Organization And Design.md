@@ -2491,13 +2491,13 @@ sw  $15, 100($2)
 
 其中，我們可以知道，其實sub指令在第三級ALU運算結束後，就會有值了。
 
-因此，其實我們可以直接用旁路把值提前送進下一個指令的ALU上，以下列舉四個可能的傳送方式
+因此，其實我們可以直接用旁路把值提前送進下一個指令的ALU上，以下列舉兩類共四個風險條件的表示方式。
 
 ```
-EX/MEM RegisterRd = ID/EX RegisterRs
-EX/MEM RegisterRd = ID/EX RegisterRt
-MEM/WB RegisterRd = ID/EX RegisterRs
-MEM/WB RegisterRd = ID/EX RegisterRt
+1a. EX/MEM RegisterRd = ID/EX RegisterRs
+1b. EX/MEM RegisterRd = ID/EX RegisterRt
+2a. MEM/WB RegisterRd = ID/EX RegisterRs
+2b. MEM/WB RegisterRd = ID/EX RegisterRt
 ```
 
 其中前面是流水線暫存器(EX/MEM)，後面是目標暫存器(RegisterRd)
@@ -2511,4 +2511,70 @@ MEM/WB RegisterRd = ID/EX RegisterRt
 對於sub→and，我們可以用EX/MEM RegisterRd = ID/EX RegisterRs
 
 對於sub→or，我們可以用MEM/WB RegisterRd = ID/EX RegisterRt
+
+
+
+直接採用旁路雖然很好用，但他並不是一個正確解決風險的好方法。
+
+因為有些指令可能不會寫回暫存器，就會產生一些不必要的旁路。
+
+以及0暫存器必須得要是0，得要有個方法可以避免把0暫存器給旁路非0的東西過去。
+
+
+
+為了解決這個問題，我們其實可以直接去判斷RegWrite的信號是否為1。
+
+至於把0暫存器旁路非0的值過去，我們可以把前面的傳送方式加上附加條件。
+
+在第一類風險條件中加上$\text{EX/MEM. RegisterRd} \neq 0$，第二類風險條件加上$\text{MEM/WB. RegisterRd} \neq 0$。
+
+
+
+比起前面兩張圖，第一張圖嘗試用最後的WB級來丟值到下面的指令。
+
+而第二張圖我們利用流水線暫存器來丟值，不單一依靠WB級。
+
+因為流水線暫存器有了我們所需要的資料，所以我們可以直接用流水線暫存器來達成我們的目標。
+
+
+
+如果我們能夠從任何一個流水線暫存器把資料放進去，而不是只用ID/EX流水線暫存器，
+
+那麼我們就可以直接旁路我們所需要的資料進入ALU。
+
+利用多工器來把決定什麼樣的資料要輸入進去ALU，隨著適當的控制，我們就能全速運行流水線。
+
+
+
+假設我們現在只有四個指令，分別是：AND、OR、add、sub，下圖呈現出加上多工器與沒加的區別。
+
+![image-20210618201307960](https://i.imgur.com/hB95a3c.png)
+
+
+
+旁路元件在EX級，這代表旁路上的控制也在EX級上完成。
+
+所以我們透過ID/EX暫存器的參數暫存器號rs來控制旁路元件，來傳遞信號控制是否旁路。
+
+在新增旁路這個功能以前，我們的ID/EX只有保存rt(20~16)的部分，但為了增加旁路的這個功能，我們必須要在ID/EX暫存器上紀錄rs(25~21)。
+
+
+
+下圖提供旁路元件的信號意義。
+
+![image-20210618203455082](https://i.imgur.com/104bZpi.png)
+
+接下來描述信號的產生，先考慮EX風險：
+
+如果EX/MEM的RegWrite為1，且EX/MEM 的RegisterRd不為0，且EX/MEM. RegisterRd = ID/EX. RegisterRs，則ForwardA = 10。
+
+如果EX/MEM的RegWrite為1，且EX/MEM 的RegisterRd不為0，且EX/MEM. RegisterRd = ID/EX. RegisterRt，則ForwardB = 10。
+
+再考慮MEM風險：
+
+如果MEM/WB的RegWrite為1，且MEM/WB 的RegisterRd不為0，且EX/MEM. RegisterRd = EX/MEM. RegisterRs，則ForwardA = 01。
+
+如果MEM/WB的RegWrite為1，且MEM/WB 的RegisterRd不為0，且EX/MEM. RegisterRd = EX/MEM. RegisterRt，則ForwardB = 01。
+
+
 
