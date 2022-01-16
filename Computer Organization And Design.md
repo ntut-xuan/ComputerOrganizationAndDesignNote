@@ -332,10 +332,11 @@ $\text{CPU Times} = \dfrac{\text{Instruction}}{\text{Program}} \times \dfrac{\te
 - 若我們要相加四個變數a, b, c, d，則可以寫成以下
 
   ```
-  add a, b, c
+  add a, a, b
+  add a, a, c
   add a, a, d
   ```
-
+  
   
 
 ### 2.3 計算機硬體的運算元
